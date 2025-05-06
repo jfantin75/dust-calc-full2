@@ -58,9 +58,16 @@ const DustCollectionCalculator = () => {
   };
 
   const handleCalculate = () => {
-    const sp = calculateTotalStaticPressure(components, material, diameter, pipes, flexHoses);
-    const adjustedSP = sp + cycloneOptions[cyclone] + filterOptions[filter];
-    const cfm = calculateFinalCFM(adjustedSP, diameter);
+    const sp = calculateTotalStaticPressure({
+      pipeSections: pipes,
+      flexHoseSections: flexHoses,
+      components,
+      materialType: material,
+      cyclone,
+      filter
+    });
+    const adjustedSP = sp;
+    const cfm = calculateFinalCFM(adjustedSP);
     const velocity = getVelocity(cfm, diameter);
     setResult({ sp: adjustedSP.toFixed(2), cfm: Math.round(cfm), velocity: Math.round(velocity) });
   };

@@ -1,4 +1,4 @@
-// File: utils/constants.js
+// utils/constants.js
 
 export const initialState = {
   systemDiameter: 6,

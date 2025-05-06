@@ -86,3 +86,24 @@ export const frictionLossData = {
     { cfm: 1200, sp: 3.00 },
   ],
 };
+
+// helper to interpolate friction loss for any diameter/CFM
+export function getInterpolatedLoss(cfm, diameter) {
+  const table = frictionLossData[diameter];
+  if (!table) return 0.02; // fallback default
+
+  const sorted = table.slice().sort((a, b) => a.cfm - b.cfm);
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const low = sorted[i];
+    const high = sorted[i + 1];
+    if (cfm >= low.cfm && cfm <= high.cfm) {
+      const ratio = (cfm - low.cfm) / (high.cfm - low.cfm);
+      return low.sp + ratio * (high.sp - low.sp);
+    }
+  }
+
+  // If cfm is below or above range, use the nearest available value
+  if (cfm < sorted[0].cfm) return sorted[0].sp;
+  return sorted[sorted.length - 1].sp;
+}

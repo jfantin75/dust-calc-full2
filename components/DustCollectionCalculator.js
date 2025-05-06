@@ -4,8 +4,8 @@ import {
   componentOptions,
   cycloneOptions,
   filterOptions,
-  materialTypes,
-} from '../utils/constants';
+  materialTypes }
+from '../utils/constants';
 import {
   calculateTotalStaticPressure,
   calculateFinalCFM,

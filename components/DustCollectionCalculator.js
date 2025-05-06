@@ -54,8 +54,7 @@ const DustCollectionCalculator = () => {
   };
   const addFanRow = () => setFanChart([...fanChart, { sp: '', cfm: '' }]);
 
-  const handleCalculate = () => {
-    const sp = calculateTotalStaticPressure(components, material, diameter, pipes, flexHoses) + cycloneOptions[cyclone] + filterOptions[filter];
+    const handleCalculate = () => {
     const fanPoints = fanChart
       .map((pt) => ({ sp: parseFloat(pt.sp), cfm: parseFloat(pt.cfm) }))
       .filter((pt) => !isNaN(pt.sp) && !isNaN(pt.cfm))
@@ -63,22 +62,31 @@ const DustCollectionCalculator = () => {
 
     let cfm;
     if (fanPoints.length >= 2) {
-      const lower = fanPoints.find((pt, i) => pt.sp <= sp && fanPoints[i + 1]?.sp >= sp);
-      const upper = fanPoints.find((pt) => pt.sp >= sp);
-      if (lower && upper && lower !== upper) {
-        const slope = (upper.cfm - lower.cfm) / (upper.sp - lower.sp);
-        cfm = lower.cfm + slope * (sp - lower.sp);
-      } else {
-        cfm = upper?.cfm || fanPoints[fanPoints.length - 1].cfm;
-      }
+      cfm = calculateFinalCFM(
+        diameter,
+        components,
+        material,
+        pipes,
+        flexHoses,
+        fanPoints
+      );
     } else {
-      cfm = calculateFinalCFM(sp);
+      // fallback approximation
+      cfm = 1000;
     }
+
+    const sp = calculateTotalStaticPressure(
+      components,
+      material,
+      diameter,
+      pipes,
+      flexHoses,
+      cfm
+    ) + cycloneOptions[cyclone] + filterOptions[filter];
 
     const velocity = getVelocity(cfm, diameter);
     setResult({ sp: sp.toFixed(2), cfm: Math.round(cfm), velocity: Math.round(velocity) });
   };
-
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Dust Collection Calculator</h1>

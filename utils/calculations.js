@@ -1,7 +1,6 @@
-// utils/calculations.js
-
 import { frictionLossData, componentOptions } from './constants';
 
+// Interpolate static pressure from duct friction table
 function interpolateSP(cfm, diameter) {
   const table = frictionLossData[diameter];
   if (!table) return null;
@@ -15,7 +14,6 @@ function interpolateSP(cfm, diameter) {
     }
   }
 
-  // Extrapolate if outside known range
   if (cfm < table[0].cfm) return table[0].sp;
   return table[table.length - 1].sp;
 }
@@ -27,7 +25,7 @@ function estimatePipeLoss(pipes, cfm) {
     const l = Number(length);
     const spPer100ft = interpolateSP(cfm, d);
     if (spPer100ft != null) {
-      total += (l / 1200) * spPer100ft; // 1200 inches in 100 ft
+      total += (l / 1200) * spPer100ft;
     }
   }
   return total;
@@ -35,7 +33,7 @@ function estimatePipeLoss(pipes, cfm) {
 
 function estimateFlexLoss(flexHoses, materialType) {
   let total = 0;
-  const friction = materialType === 'metal' ? 0.2 : 0.25; // fallback rough numbers
+  const friction = materialType === 'metal' ? 0.2 : 0.25;
   for (const { length } of flexHoses) {
     const l = Number(length);
     total += (l / 12) * friction;
@@ -57,23 +55,33 @@ export function calculateTotalStaticPressure(components, materialType, mainDuctD
   return pipeLoss + flexLoss + compLoss;
 }
 
-export function calculateFinalCFM(mainDuctDiameter, components, materialType, pipes, flexHoses) {
-  let cfm = 1000;
-  let prevSP = 0;
-
-  for (let i = 0; i < 10; i++) {
-    const sp = calculateTotalStaticPressure(components, materialType, mainDuctDiameter, pipes, flexHoses, cfm);
-    if (Math.abs(sp - prevSP) < 0.01) break;
-    prevSP = sp;
-
-    // Simple fan curve approximation: decrease CFM as SP increases
-    if (sp < 1) cfm = 1400;
-    else if (sp < 2) cfm = 1000;
-    else if (sp < 3) cfm = 700;
-    else cfm = 500;
+export function calculateFinalCFM(diameter, components, materialType, pipes, flexHoses, fanChart) {
+  if (!fanChart || fanChart.length < 2) {
+    return 0;
   }
 
-  return cfm;
+  // Sort fan chart by SP (low to high)
+  const sorted = [...fanChart].sort((a, b) => a.sp - b.sp);
+  let cfmGuess = sorted[0].cfm;
+
+  for (let i = 0; i < 15; i++) {
+    const actualSP = calculateTotalStaticPressure(components, materialType, diameter, pipes, flexHoses, cfmGuess);
+    const matched = sorted.find((p) => Math.abs(p.sp - actualSP) < 0.01);
+    if (matched) return matched.cfm;
+
+    // Interpolate next CFM guess from fan chart
+    for (let j = 0; j < sorted.length - 1; j++) {
+      const low = sorted[j];
+      const high = sorted[j + 1];
+      if (actualSP >= low.sp && actualSP <= high.sp) {
+        const ratio = (actualSP - low.sp) / (high.sp - low.sp);
+        cfmGuess = low.cfm + ratio * (high.cfm - low.cfm);
+        break;
+      }
+    }
+  }
+
+  return Math.round(cfmGuess);
 }
 
 export function getVelocity(cfm, diameter) {

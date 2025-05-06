@@ -1,29 +1,40 @@
+// File: utils/constants.js
+
 export const initialState = {
-  ductMaterial: 'Metal',
-  mainDuctDiameter: 6,
-  pipes: [{ length: 0, diameter: 6 }],
-  flexHoses: [{ length: 0, diameter: 6 }],
+  systemDiameter: 6,
+  material: 'PVC',
+  mainRuns: [{ length: 10, diameter: 6 }],
+  flexRuns: [],
   components: [],
-  cyclone: 'None',
-  filter: 'None',
+  cyclone: { type: '', spLoss: 0 },
+  filter: { type: '', spLoss: 0 },
 };
 
-export const componentOptions = {
-  ELBOW45: 0.3,
-  ELBOW90: 0.75,
-  WYE: 0.5,
-  TEE: 0.9,
-  BLASTGATE: 0.2,
+export const componentOptions = [
+  { label: '90° Elbow', type: 'elbow_90', baseSP: 0.75 },
+  { label: '45° Elbow', type: 'elbow_45', baseSP: 0.4 },
+  { label: 'Wye', type: 'wye', baseSP: 0.35 },
+  { label: 'Tee', type: 'tee', baseSP: 0.5 },
+  { label: 'Blast Gate', type: 'blast_gate', baseSP: 0.1 },
+];
+
+export const cycloneOptions = [
+  { label: 'None', value: '', spLoss: 0 },
+  { label: 'Basic Cyclone (Add-on)', value: 'basic', spLoss: 1.0 },
+  { label: 'High Efficiency Cyclone (Add-on)', value: 'high_eff', spLoss: 0.75 },
+];
+
+export const filterOptions = [
+  { label: 'None', value: '', spLoss: 0 },
+  { label: 'Standard Filter (Add-on)', value: 'standard', spLoss: 0.5 },
+  { label: 'High Efficiency Filter (Add-on)', value: 'high_eff', spLoss: 0.75 },
+];
+
+export const materialTypes = {
+  PVC: 1.0,
+  'Metal - Smooth': 1.1,
+  'Metal - Galvanized': 1.2,
+  'Flex Hose': 2.5,
 };
 
-export const cycloneOptions = {
-  None: 0,
-  'Basic Cyclone': 1.0,
-  'High Efficiency Cyclone': 0.5,
-};
-
-export const filterOptions = {
-  None: 0,
-  Bag: 0.8,
-  Cartridge: 0.6,
-};
+export const ductDiameters = [4, 5, 6, 7, 8];

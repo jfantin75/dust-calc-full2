@@ -1,8 +1,22 @@
-// File: utils/constants.js
+// utils/constants.js
 
-export const materialTypes = {
-  metal: { label: 'Metal', spFactor: 0.02 },
-  pvc: { label: 'PVC', spFactor: 0.03 },
+export const initialState = {
+  component: {
+    type: 'wye',
+    quantity: 1,
+    diameter: '6',
+  },
+};
+
+export const componentOptions = {
+  wye: { label: 'Wye', loss: 0.15 },
+  tee: { label: 'Tee', loss: 0.25 },
+  elbow45: { label: '45° Elbow', loss: 0.15 },
+  elbow90: { label: '90° Elbow', loss: 0.25 },
+  blastGate: { label: 'Blast Gate', loss: 0.1 },
+  reducer: { label: 'Reducer', loss: 0.2 },
+  lateral: { label: 'Lateral', loss: 0.2 },
+  custom: { label: 'Custom Component', loss: 0.1 },
 };
 
 export const cycloneOptions = {
@@ -17,16 +31,20 @@ export const filterOptions = {
   hepa: 2.0,
 };
 
-export const componentOptions = {
-  elbow90: { label: '90° Elbow', sp: 0.75 },
-  elbow45: { label: '45° Elbow', sp: 0.5 },
-  wye: { label: 'Wye', sp: 0.5 },
-  tee: { label: 'Tee', sp: 1.0 },
-  blastGate: { label: 'Blast Gate', sp: 0.25 },
-};
-
-export const initialState = {
-  component: { type: 'elbow90', quantity: 1, diameter: '' },
-  straightPipe: { length: '', diameter: '' },
-  flexHose: { length: '', diameter: '' },
+export const materialTypes = {
+  metal: {
+    label: 'Metal Ducting',
+    straight: 0.02,
+    flex: 0.2,
+  },
+  pvc: {
+    label: 'PVC Ducting',
+    straight: 0.025,
+    flex: 0.25,
+  },
+  flex: {
+    label: 'Flexible Hose Only',
+    straight: 0.03,
+    flex: 0.3,
+  },
 };

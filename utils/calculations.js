@@ -1,53 +1,53 @@
 // utils/calculations.js
 
-import { materialTypes, componentLossValues, cycloneTypes, filterTypes } from './constants';
+import { materialTypes, componentOptions } from './constants';
 
-export function calculateTotalStaticPressure({
-  pipeSections,
-  flexHoseSections,
-  components,
-  materialType,
-  cyclone,
-  filter,
-}) {
+export function calculateTotalStaticPressure(components, materialType, mainDuctDiameter, pipes, flexHoses) {
   let totalLoss = 0;
 
-  // Pipe sections
-  for (const section of pipeSections) {
+  // Add loss from straight pipes
+  for (const section of pipes) {
+    const lengthFeet = Number(section.length) / 12;
+    const diameter = Number(section.diameter);
     const friction = materialTypes[materialType]?.straight ?? 0.02;
-    totalLoss += (section.length / 12) * friction;
+
+    // Adjust friction based on diameter
+    const adjustment = diameter && diameter !== Number(mainDuctDiameter) ? diameter / Number(mainDuctDiameter) : 1;
+    totalLoss += lengthFeet * friction * adjustment;
   }
 
-  // Flex hose sections
-  for (const section of flexHoseSections) {
+  // Add loss from flex hoses
+  for (const section of flexHoses) {
+    const lengthFeet = Number(section.length) / 12;
+    const diameter = Number(section.diameter);
     const friction = materialTypes[materialType]?.flex ?? 0.2;
-    totalLoss += (section.length / 12) * friction;
+
+    const adjustment = diameter && diameter !== Number(mainDuctDiameter) ? diameter / Number(mainDuctDiameter) : 1;
+    totalLoss += lengthFeet * friction * adjustment;
   }
 
-  // Components
+  // Add loss from components
   for (const comp of components) {
-    const loss = componentLossValues[comp.type] ?? 0.1;
-    totalLoss += loss * comp.count;
+    const loss = componentOptions[comp.type]?.loss ?? 0.1;
+    const quantity = Number(comp.quantity) || 0;
+    totalLoss += loss * quantity;
   }
-
-  // Cyclone
-  totalLoss += cycloneTypes[cyclone] ?? 0;
-
-  // Filter
-  totalLoss += filterTypes[filter] ?? 0;
 
   return totalLoss;
 }
 
-export function calculateFinalCFM(staticPressure) {
-  // Simplified fan curve approximation
-  if (staticPressure < 1) return 1400;
-  if (staticPressure < 2) return 1000;
-  if (staticPressure < 3) return 700;
+export function calculateFinalCFM(staticPressure, diameter) {
+  // Use a simplified fan curve for a typical dust collector
+  const sp = Number(staticPressure);
+
+  if (sp < 1) return 1400;
+  if (sp < 2) return 1000;
+  if (sp < 3) return 700;
   return 500;
 }
 
 export function getVelocity(cfm, diameter) {
-  const area = (Math.PI * Math.pow(diameter / 12, 2)) / 4;
-  return cfm / area / 60;
+  const d = Number(diameter);
+  const area = (Math.PI * Math.pow(d / 12, 2)) / 4;
+  return area ? cfm / area / 60 : 0;
 }

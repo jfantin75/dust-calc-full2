@@ -4,8 +4,8 @@ import {
   componentOptions,
   cycloneOptions,
   filterOptions,
-  materialTypes }
-from '../utils/constants';
+  materialTypes,
+} from '../utils/constants';
 import {
   calculateTotalStaticPressure,
   calculateFinalCFM,
@@ -14,6 +14,8 @@ import {
 
 const DustCollectionCalculator = () => {
   const [components, setComponents] = useState([{ ...initialState.component }]);
+  const [pipes, setPipes] = useState([{ length: '', diameter: '6' }]);
+  const [flexHoses, setFlexHoses] = useState([{ length: '', diameter: '6' }]);
   const [material, setMaterial] = useState('metal');
   const [diameter, setDiameter] = useState('6');
   const [cyclone, setCyclone] = useState('none');
@@ -35,8 +37,28 @@ const DustCollectionCalculator = () => {
     setComponents(updated);
   };
 
+  const handlePipeChange = (index, field, value) => {
+    const updated = [...pipes];
+    updated[index][field] = value;
+    setPipes(updated);
+  };
+
+  const addPipe = () => {
+    setPipes([...pipes, { length: '', diameter: '6' }]);
+  };
+
+  const handleFlexHoseChange = (index, field, value) => {
+    const updated = [...flexHoses];
+    updated[index][field] = value;
+    setFlexHoses(updated);
+  };
+
+  const addFlexHose = () => {
+    setFlexHoses([...flexHoses, { length: '', diameter: '6' }]);
+  };
+
   const handleCalculate = () => {
-    const sp = calculateTotalStaticPressure(components, material, diameter);
+    const sp = calculateTotalStaticPressure(components, material, diameter, pipes, flexHoses);
     const adjustedSP = sp + cycloneOptions[cyclone] + filterOptions[filter];
     const cfm = calculateFinalCFM(adjustedSP, diameter);
     const velocity = getVelocity(cfm, diameter);
@@ -105,6 +127,52 @@ const DustCollectionCalculator = () => {
           </select>
         </div>
       </div>
+
+      <h2 className="text-xl font-semibold mb-2">Straight Pipe Sections</h2>
+      {pipes.map((pipe, i) => (
+        <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+          <input
+            type="number"
+            className="p-2 border rounded"
+            value={pipe.length}
+            onChange={(e) => handlePipeChange(i, 'length', e.target.value)}
+            placeholder="Length (in)"
+          />
+          <input
+            type="number"
+            className="p-2 border rounded"
+            value={pipe.diameter}
+            onChange={(e) => handlePipeChange(i, 'diameter', e.target.value)}
+            placeholder="Diameter (in)"
+          />
+        </div>
+      ))}
+      <button onClick={addPipe} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">
+        + Add Pipe
+      </button>
+
+      <h2 className="text-xl font-semibold mb-2">Flex Hose Sections</h2>
+      {flexHoses.map((hose, i) => (
+        <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+          <input
+            type="number"
+            className="p-2 border rounded"
+            value={hose.length}
+            onChange={(e) => handleFlexHoseChange(i, 'length', e.target.value)}
+            placeholder="Length (in)"
+          />
+          <input
+            type="number"
+            className="p-2 border rounded"
+            value={hose.diameter}
+            onChange={(e) => handleFlexHoseChange(i, 'diameter', e.target.value)}
+            placeholder="Diameter (in)"
+          />
+        </div>
+      ))}
+      <button onClick={addFlexHose} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">
+        + Add Flex Hose
+      </button>
 
       <h2 className="text-xl font-semibold mb-2">System Components</h2>
       {components.map((comp, i) => (

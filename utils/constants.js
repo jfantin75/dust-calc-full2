@@ -1,31 +1,29 @@
-// File: utils/constants.js
-
 export const initialState = {
-  material: 'Metal',
+  ductMaterial: 'Metal',
   mainDuctDiameter: 6,
-  pipeSections: [],
-  flexHoseSections: [],
+  pipes: [{ length: 0, diameter: 6 }],
+  flexHoses: [{ length: 0, diameter: 6 }],
   components: [],
-  cyclone: { type: 'None', diameter: 6 },
-  filter: { type: 'None', diameter: 6 },
+  cyclone: 'None',
+  filter: 'None',
 };
 
-export const componentOptions = [
-  { label: '45° Elbow', component: 'ELBOW45', loss: 0.25 },
-  { label: '90° Elbow', component: 'ELBOW90', loss: 0.75 },
-  { label: 'Wye', component: 'WYE', loss: 0.5 },
-  { label: 'Tee', component: 'TEE', loss: 1.2 },
-  { label: 'Blast Gate', component: 'BLASTGATE', loss: 0.05 },
-];
+export const componentOptions = {
+  ELBOW45: 0.3,
+  ELBOW90: 0.75,
+  WYE: 0.5,
+  TEE: 0.9,
+  BLASTGATE: 0.2,
+};
 
-export const cycloneOptions = [
-  { label: 'None', type: 'None', loss: 0 },
-  { label: 'Basic Cyclone', type: 'Basic', loss: 1.8 },
-  { label: 'High Efficiency Cyclone', type: 'HighEfficiency', loss: 1.2 },
-];
+export const cycloneOptions = {
+  None: 0,
+  'Basic Cyclone': 1.0,
+  'High Efficiency Cyclone': 0.5,
+};
 
-export const filterOptions = [
-  { label: 'None', type: 'None', loss: 0 },
-  { label: 'Bag Filter', type: 'Bag', loss: 2.0 },
-  { label: 'Cartridge Filter', type: 'Cartridge', loss: 1.0 },
-];
+export const filterOptions = {
+  None: 0,
+  Bag: 0.8,
+  Cartridge: 0.6,
+};

@@ -31,10 +31,9 @@ export const filterOptions = [
 ];
 
 export const materialTypes = {
-  PVC: 1.0,
-  'Metal - Smooth': 1.1,
-  'Metal - Galvanized': 1.2,
-  'Flex Hose': 2.5,
+  metal: { label: 'Metal', lossPerFoot: 0.05 },
+  pvc: { label: 'PVC', lossPerFoot: 0.03 },
+  flex: { label: 'Flex Hose', lossPerFoot: 0.15 },
 };
 
 export const ductDiameters = [4, 5, 6, 7, 8];

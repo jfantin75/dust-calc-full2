@@ -7,6 +7,7 @@ import {
   pipeFrictionLoss,
   flexFrictionLoss,
   materialTypes,
+  collectorOptions
 } from '../utils/constants';
 import {
   calculateTotalStaticPressure,
@@ -22,8 +23,8 @@ const DustCollectionCalculator = () => {
   const [diameter, setDiameter] = useState('6');
   const [cyclone, setCyclone] = useState('none');
   const [filter, setFilter] = useState('none');
+  const [collector, setCollector] = useState('');
   const [fanChart, setFanChart] = useState([{ sp: '', cfm: '' }]);
-  const [selectedCollector, setSelectedCollector] = useState('');
   const [showFanHelp, setShowFanHelp] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -64,10 +65,15 @@ const DustCollectionCalculator = () => {
       .sort((a, b) => a.sp - b.sp);
 
     const mainDuctDiameter = Number(diameter);
-    let cfm;
+    let fanPoints = parsedFanChart;
 
-    if (parsedFanChart.length >= 2) {
-      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses, parsedFanChart);
+    if (collector && collectorOptions[collector]) {
+      fanPoints = collectorOptions[collector];
+    }
+
+    let cfm;
+    if (fanPoints.length >= 2) {
+      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses, fanPoints);
     } else {
       cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses);
     }
@@ -100,9 +106,12 @@ const DustCollectionCalculator = () => {
           <select
             className="w-full p-2 border rounded"
             value={material}
-            onChange={(e) => setMaterial(e.target.value)}>
+            onChange={(e) => setMaterial(e.target.value)}
+          >
             {Object.keys(materialTypes).map((key) => (
-              <option key={key} value={key}>{materialTypes[key].label}</option>
+              <option key={key} value={key}>
+                {materialTypes[key].label}
+              </option>
             ))}
           </select>
         </div>
@@ -115,15 +124,17 @@ const DustCollectionCalculator = () => {
             onChange={(e) => setDiameter(e.target.value)}
           />
         </div>
-        <div className="sm:col-span-2">
+        <div>
           <label className="font-semibold">Select Dust Collector</label>
           <select
             className="w-full p-2 border rounded"
-            value={selectedCollector}
-            onChange={(e) => setSelectedCollector(e.target.value)}>
+            value={collector}
+            onChange={(e) => setCollector(e.target.value)}
+          >
             <option value="">-- none (manual input) --</option>
-            <option value="g0441">Grizzly G0441</option>
-            <option value="delta50850">Delta 50-850</option>
+            {Object.keys(collectorOptions).map((key) => (
+              <option key={key} value={key}>{key}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -136,7 +147,7 @@ const DustCollectionCalculator = () => {
         <div className="mb-4 text-sm text-gray-700">
           <p>
             Input your dust collector's fan chart. The calculator will interpolate your actual CFM from the
-            chart based on the system's pressure. If left blank, it uses a default approximation.
+            chart based on the system's pressure. If left blank, it uses a default approximation or the preset collector.
           </p>
         </div>
       )}
@@ -162,9 +173,11 @@ const DustCollectionCalculator = () => {
         + Add Fan Chart Row
       </button>
 
-      <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">
-        Calculate
-      </button>
+      <div>
+        <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">
+          Calculate
+        </button>
+      </div>
 
       {result && (
         <div className="mt-6 border-t pt-4">

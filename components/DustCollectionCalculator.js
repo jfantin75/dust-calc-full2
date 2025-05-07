@@ -54,39 +54,44 @@ const DustCollectionCalculator = () => {
   };
   const addFanRow = () => setFanChart([...fanChart, { sp: '', cfm: '' }]);
 
-    const handleCalculate = () => {
+  const handleCalculate = () => {
     const fanPoints = fanChart
       .map((pt) => ({ sp: parseFloat(pt.sp), cfm: parseFloat(pt.cfm) }))
       .filter((pt) => !isNaN(pt.sp) && !isNaN(pt.cfm))
       .sort((a, b) => a.sp - b.sp);
 
-    let cfm;
-    if (fanPoints.length >= 2) {
-      cfm = calculateFinalCFM(
-        diameter,
-        components,
-        material,
-        pipes,
-        flexHoses,
-        fanPoints
-      );
-    } else {
-      // fallback approximation
-      cfm = 1000;
-    }
+    const cycloneSP = cycloneOptions[cyclone] || 0;
+    const filterSP = filterOptions[filter] || 0;
 
-    const sp = calculateTotalStaticPressure(
+    const cfm = calculateFinalCFM(
+      diameter,
       components,
       material,
-      diameter,
       pipes,
       flexHoses,
-      cfm
-    ) + cycloneOptions[cyclone] + filterOptions[filter];
+      fanPoints,
+      cycloneSP,
+      filterSP
+    );
+
+    const totalSP =
+      calculateTotalStaticPressure(
+        components,
+        material,
+        diameter,
+        pipes,
+        flexHoses,
+        cfm
+      ) + cycloneSP + filterSP;
 
     const velocity = getVelocity(cfm, diameter);
-    setResult({ sp: sp.toFixed(2), cfm: Math.round(cfm), velocity: Math.round(velocity) });
+    setResult({
+      sp: totalSP.toFixed(2),
+      cfm: Math.round(cfm),
+      velocity: Math.round(velocity),
+    });
   };
+
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Dust Collection Calculator</h1>

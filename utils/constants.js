@@ -103,3 +103,21 @@ export const componentLossValues = {
     },
   },
 };
+
+// Helper to get pipe/flex loss per unit length at 4000 FPM
+export function getOneidaLoss(type, diameter) {
+  if (type === 'pipe') {
+    return pipeFrictionLoss[diameter] ?? 0.2;
+  }
+  if (type === 'flex') {
+    return flexFrictionLoss[diameter] ?? 0.25;
+  }
+  return 0.2;
+}
+
+// Helper to get component loss for a given diameter
+export function getComponentLoss(type, diameter) {
+  const comp = componentLossValues[type];
+  if (!comp || !comp.losses) return 0.1;
+  return comp.losses[diameter] ?? comp.losses[6] ?? 0.1;
+}

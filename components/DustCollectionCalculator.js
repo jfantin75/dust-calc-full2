@@ -14,20 +14,6 @@ import {
   getVelocity,
 } from '../utils/calculations';
 
-const predefinedFanCharts = {
-  'Grizzly G0441': [
-    { sp: 2.0, cfm: 1700 },
-    { sp: 6.0, cfm: 1440 },
-    { sp: 8.0, cfm: 1275 },
-    { sp: 10.0, cfm: 1100 },
-  ],
-  'Delta 50-850': [
-    { sp: 0.5, cfm: 650 },
-    { sp: 1.0, cfm: 580 },
-    { sp: 2.0, cfm: 480 },
-  ],
-};
-
 const DustCollectionCalculator = () => {
   const [components, setComponents] = useState([{ ...initialState.component }]);
   const [pipes, setPipes] = useState([{ length: '', diameter: '6' }]);
@@ -37,8 +23,8 @@ const DustCollectionCalculator = () => {
   const [cyclone, setCyclone] = useState('none');
   const [filter, setFilter] = useState('none');
   const [fanChart, setFanChart] = useState([{ sp: '', cfm: '' }]);
+  const [selectedCollector, setSelectedCollector] = useState('');
   const [showFanHelp, setShowFanHelp] = useState(false);
-  const [selectedFanModel, setSelectedFanModel] = useState('');
   const [result, setResult] = useState(null);
 
   const handleComponentChange = (index, field, value) => {
@@ -70,13 +56,6 @@ const DustCollectionCalculator = () => {
     setFanChart(updated);
   };
   const addFanRow = () => setFanChart([...fanChart, { sp: '', cfm: '' }]);
-
-  const handleFanModelSelect = (e) => {
-    const model = e.target.value;
-    setSelectedFanModel(model);
-    const data = predefinedFanCharts[model] || [{ sp: '', cfm: '' }];
-    setFanChart(data);
-  };
 
   const handleCalculate = () => {
     const parsedFanChart = fanChart
@@ -121,12 +100,9 @@ const DustCollectionCalculator = () => {
           <select
             className="w-full p-2 border rounded"
             value={material}
-            onChange={(e) => setMaterial(e.target.value)}
-          >
+            onChange={(e) => setMaterial(e.target.value)}>
             {Object.keys(materialTypes).map((key) => (
-              <option key={key} value={key}>
-                {materialTypes[key].label}
-              </option>
+              <option key={key} value={key}>{materialTypes[key].label}</option>
             ))}
           </select>
         </div>
@@ -139,20 +115,15 @@ const DustCollectionCalculator = () => {
             onChange={(e) => setDiameter(e.target.value)}
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div>
+        <div className="sm:col-span-2">
           <label className="font-semibold">Select Dust Collector</label>
           <select
             className="w-full p-2 border rounded"
-            value={selectedFanModel}
-            onChange={handleFanModelSelect}
-          >
-            <option value="">-- None (manual input) --</option>
-            {Object.keys(predefinedFanCharts).map((model) => (
-              <option key={model} value={model}>{model}</option>
-            ))}
+            value={selectedCollector}
+            onChange={(e) => setSelectedCollector(e.target.value)}>
+            <option value="">-- none (manual input) --</option>
+            <option value="g0441">Grizzly G0441</option>
+            <option value="delta50850">Delta 50-850</option>
           </select>
         </div>
       </div>
@@ -164,7 +135,7 @@ const DustCollectionCalculator = () => {
       {showFanHelp && (
         <div className="mb-4 text-sm text-gray-700">
           <p>
-            Input your dust collector's fan performance chart. The calculator will interpolate your actual CFM from the
+            Input your dust collector's fan chart. The calculator will interpolate your actual CFM from the
             chart based on the system's pressure. If left blank, it uses a default approximation.
           </p>
         </div>
@@ -191,11 +162,9 @@ const DustCollectionCalculator = () => {
         + Add Fan Chart Row
       </button>
 
-      <div>
-        <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">
-          Calculate
-        </button>
-      </div>
+      <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">
+        Calculate
+      </button>
 
       {result && (
         <div className="mt-6 border-t pt-4">

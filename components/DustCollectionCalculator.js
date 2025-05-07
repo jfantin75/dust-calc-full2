@@ -186,6 +186,7 @@ const DustCollectionCalculator = () => {
         + Add Fan Chart Row
       </button>
 
+      {/* Pipes */}
       <h2 className="text-xl font-semibold mb-2">Straight Pipe Sections</h2>
       {pipes.map((pipe, i) => (
         <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
@@ -209,6 +210,7 @@ const DustCollectionCalculator = () => {
         + Add Pipe
       </button>
 
+      {/* Flex Hoses */}
       <h2 className="text-xl font-semibold mb-2">Flex Hose Sections</h2>
       {flexHoses.map((hose, i) => (
         <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
@@ -232,6 +234,7 @@ const DustCollectionCalculator = () => {
         + Add Flex Hose
       </button>
 
+      {/* Components */}
       <h2 className="text-xl font-semibold mb-2">System Components</h2>
       {components.map((comp, i) => (
         <div key={i} className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4 items-end">

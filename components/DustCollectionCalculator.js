@@ -159,8 +159,7 @@ const DustCollectionCalculator = () => {
       {showFanHelp && (
         <div className="mb-4 text-sm text-gray-700">
           <p>
-            This lets you enter your dust collector's fan chart. The calculator will interpolate CFM based on your
-            system’s pressure. If blank, it uses a generic fan curve.
+            This lets you enter your dust collector's fan chart. The calculator will interpolate CFM based on your system’s pressure. If blank, it uses a generic fan curve.
           </p>
         </div>
       )}

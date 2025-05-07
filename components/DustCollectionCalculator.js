@@ -63,24 +63,22 @@ const DustCollectionCalculator = () => {
       .sort((a, b) => a.sp - b.sp);
 
     const mainDuctDiameter = Number(diameter);
-    let cfm = calculateFinalCFM(
-      mainDuctDiameter,
+    let cfm;
+
+    if (parsedFanChart.length >= 2) {
+      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses, parsedFanChart);
+    } else {
+      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses);
+    }
+
+    const staticPressure = calculateTotalStaticPressure(
       components,
       material,
+      mainDuctDiameter,
       pipes,
       flexHoses,
-      parsedFanChart.length >= 2 ? parsedFanChart : undefined
-    );
-
-    const staticPressure =
-      calculateTotalStaticPressure(
-        components,
-        material,
-        mainDuctDiameter,
-        pipes,
-        flexHoses,
-        cfm
-      ) + cycloneOptions[cyclone] + filterOptions[filter];
+      cfm
+    ) + cycloneOptions[cyclone] + filterOptions[filter];
 
     const velocity = getVelocity(cfm, mainDuctDiameter);
 
@@ -161,7 +159,8 @@ const DustCollectionCalculator = () => {
       {showFanHelp && (
         <div className="mb-4 text-sm text-gray-700">
           <p>
-            Input your dust collector's fan chart to improve accuracy. If left blank, a default curve will be used.
+            Input your dust collector's fan performance chart. The calculator will interpolate your actual CFM from the
+            chart based on the system's pressure. If left blank, it uses a default approximation.
           </p>
         </div>
       )}

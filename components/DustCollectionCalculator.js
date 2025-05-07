@@ -63,22 +63,24 @@ const DustCollectionCalculator = () => {
       .sort((a, b) => a.sp - b.sp);
 
     const mainDuctDiameter = Number(diameter);
-    let cfm;
-
-    if (parsedFanChart.length >= 2) {
-      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses, parsedFanChart);
-    } else {
-      cfm = calculateFinalCFM(mainDuctDiameter, components, material, pipes, flexHoses);
-    }
-
-    const staticPressure = calculateTotalStaticPressure(
+    let cfm = calculateFinalCFM(
+      mainDuctDiameter,
       components,
       material,
-      mainDuctDiameter,
       pipes,
       flexHoses,
-      cfm
-    ) + cycloneOptions[cyclone] + filterOptions[filter];
+      parsedFanChart.length >= 2 ? parsedFanChart : undefined
+    );
+
+    const staticPressure =
+      calculateTotalStaticPressure(
+        components,
+        material,
+        mainDuctDiameter,
+        pipes,
+        flexHoses,
+        cfm
+      ) + cycloneOptions[cyclone] + filterOptions[filter];
 
     const velocity = getVelocity(cfm, mainDuctDiameter);
 
@@ -121,7 +123,7 @@ const DustCollectionCalculator = () => {
 
       <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
         <p>
-          <strong>Note:</strong> Only add a cyclone or filter if it's an aftermarket upgrade to your dust collector. If your system already includes these components, leave them set to "None."
+          <strong>Note:</strong> Only add a cyclone or filter if it's an aftermarket upgrade to your dust collector.
         </p>
       </div>
 
@@ -159,7 +161,7 @@ const DustCollectionCalculator = () => {
       {showFanHelp && (
         <div className="mb-4 text-sm text-gray-700">
           <p>
-            This lets you enter your dust collector's fan chart. The calculator will interpolate CFM based on your system’s pressure. If blank, it uses a generic fan curve.
+            Input your dust collector's fan chart to improve accuracy. If left blank, a default curve will be used.
           </p>
         </div>
       )}
@@ -280,15 +282,9 @@ const DustCollectionCalculator = () => {
       {result && (
         <div className="mt-6 border-t pt-4">
           <h2 className="text-xl font-semibold mb-2">Results</h2>
-          <p>
-            <strong>Static Pressure:</strong> {result.sp} inH₂O
-          </p>
-          <p>
-            <strong>Airflow (CFM):</strong> {result.cfm}
-          </p>
-          <p>
-            <strong>Velocity (FPM):</strong> {result.velocity}
-          </p>
+          <p><strong>Static Pressure:</strong> {result.sp} inH₂O</p>
+          <p><strong>Airflow (CFM):</strong> {result.cfm}</p>
+          <p><strong>Velocity (FPM):</strong> {result.velocity}</p>
         </div>
       )}
     </div>

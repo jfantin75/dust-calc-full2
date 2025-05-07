@@ -14,6 +14,20 @@ import {
   getVelocity,
 } from '../utils/calculations';
 
+const predefinedFanCharts = {
+  'Grizzly G0441': [
+    { sp: 2.0, cfm: 1700 },
+    { sp: 6.0, cfm: 1440 },
+    { sp: 8.0, cfm: 1275 },
+    { sp: 10.0, cfm: 1100 },
+  ],
+  'Delta 50-850': [
+    { sp: 0.5, cfm: 650 },
+    { sp: 1.0, cfm: 580 },
+    { sp: 2.0, cfm: 480 },
+  ],
+};
+
 const DustCollectionCalculator = () => {
   const [components, setComponents] = useState([{ ...initialState.component }]);
   const [pipes, setPipes] = useState([{ length: '', diameter: '6' }]);
@@ -24,6 +38,7 @@ const DustCollectionCalculator = () => {
   const [filter, setFilter] = useState('none');
   const [fanChart, setFanChart] = useState([{ sp: '', cfm: '' }]);
   const [showFanHelp, setShowFanHelp] = useState(false);
+  const [selectedFanModel, setSelectedFanModel] = useState('');
   const [result, setResult] = useState(null);
 
   const handleComponentChange = (index, field, value) => {
@@ -55,6 +70,13 @@ const DustCollectionCalculator = () => {
     setFanChart(updated);
   };
   const addFanRow = () => setFanChart([...fanChart, { sp: '', cfm: '' }]);
+
+  const handleFanModelSelect = (e) => {
+    const model = e.target.value;
+    setSelectedFanModel(model);
+    const data = predefinedFanCharts[model] || [{ sp: '', cfm: '' }];
+    setFanChart(data);
+  };
 
   const handleCalculate = () => {
     const parsedFanChart = fanChart
@@ -96,91 +118,83 @@ const DustCollectionCalculator = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="font-semibold">Duct Material</label>
-          <select className="w-full p-2 border rounded" value={material} onChange={(e) => setMaterial(e.target.value)}>
+          <select
+            className="w-full p-2 border rounded"
+            value={material}
+            onChange={(e) => setMaterial(e.target.value)}
+          >
             {Object.keys(materialTypes).map((key) => (
-              <option key={key} value={key}>{materialTypes[key].label}</option>
+              <option key={key} value={key}>
+                {materialTypes[key].label}
+              </option>
             ))}
           </select>
         </div>
         <div>
           <label className="font-semibold">Main Duct Diameter (inches)</label>
-          <input type="number" className="w-full p-2 border rounded" value={diameter} onChange={(e) => setDiameter(e.target.value)} />
+          <input
+            type="number"
+            className="w-full p-2 border rounded"
+            value={diameter}
+            onChange={(e) => setDiameter(e.target.value)}
+          />
         </div>
       </div>
 
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
-        <p><strong>Note:</strong> Only add a cyclone or filter if it's an aftermarket upgrade to your dust collector.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="font-semibold">Cyclone Type</label>
-          <select className="w-full p-2 border rounded" value={cyclone} onChange={(e) => setCyclone(e.target.value)}>
-            <option value="none">None</option>
-            <option value="basic">Basic Cyclone (1.50 inH₂O)</option>
-            <option value="highEfficiency">High-Efficiency Cyclone (0.75 inH₂O)</option>
-          </select>
-        </div>
-        <div>
-          <label className="font-semibold">Filter Type</label>
-          <select className="w-full p-2 border rounded" value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="none">None</option>
-            <option value="standard">Standard Cartridge Filter (0.50 inH₂O)</option>
-            <option value="hepa">HEPA Filter (2.00 inH₂O)</option>
+          <label className="font-semibold">Select Dust Collector</label>
+          <select
+            className="w-full p-2 border rounded"
+            value={selectedFanModel}
+            onChange={handleFanModelSelect}
+          >
+            <option value="">-- None (manual input) --</option>
+            {Object.keys(predefinedFanCharts).map((model) => (
+              <option key={model} value={model}>{model}</option>
+            ))}
           </select>
         </div>
       </div>
 
       <h2 className="text-xl font-semibold mb-2">Fan Chart (Optional)</h2>
-      <button onClick={() => setShowFanHelp(!showFanHelp)} className="text-blue-600 underline mb-2">{showFanHelp ? 'Hide explanation' : "What's this?"}</button>
+      <button onClick={() => setShowFanHelp(!showFanHelp)} className="text-blue-600 underline mb-2">
+        {showFanHelp ? 'Hide explanation' : "What's this?"}
+      </button>
       {showFanHelp && (
         <div className="mb-4 text-sm text-gray-700">
-          <p>This lets you enter your dust collector's fan chart. The calculator will interpolate CFM based on your system’s pressure. If blank, it uses a generic fan curve.</p>
+          <p>
+            Input your dust collector's fan performance chart. The calculator will interpolate your actual CFM from the
+            chart based on the system's pressure. If left blank, it uses a default approximation.
+          </p>
         </div>
       )}
       {fanChart.map((row, i) => (
         <div key={i} className="grid grid-cols-2 gap-2 mb-2">
-          <input type="number" placeholder="Static Pressure (inH₂O)" value={row.sp} onChange={(e) => handleFanChartChange(i, 'sp', e.target.value)} className="p-2 border rounded" />
-          <input type="number" placeholder="CFM" value={row.cfm} onChange={(e) => handleFanChartChange(i, 'cfm', e.target.value)} className="p-2 border rounded" />
+          <input
+            type="number"
+            placeholder="Static Pressure (inH₂O)"
+            value={row.sp}
+            onChange={(e) => handleFanChartChange(i, 'sp', e.target.value)}
+            className="p-2 border rounded"
+          />
+          <input
+            type="number"
+            placeholder="CFM"
+            value={row.cfm}
+            onChange={(e) => handleFanChartChange(i, 'cfm', e.target.value)}
+            className="p-2 border rounded"
+          />
         </div>
       ))}
-      <button onClick={addFanRow} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">+ Add Fan Chart Row</button>
-
-      <h2 className="text-xl font-semibold mb-2">Straight Pipe Sections</h2>
-      {pipes.map((pipe, i) => (
-        <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
-          <input type="number" className="p-2 border rounded" value={pipe.length} onChange={(e) => handlePipeChange(i, 'length', e.target.value)} placeholder="Length (in)" />
-          <input type="number" className="p-2 border rounded" value={pipe.diameter} onChange={(e) => handlePipeChange(i, 'diameter', e.target.value)} placeholder="Diameter (in)" />
-        </div>
-      ))}
-      <button onClick={addPipe} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">+ Add Pipe</button>
-
-      <h2 className="text-xl font-semibold mb-2">Flex Hose Sections</h2>
-      {flexHoses.map((hose, i) => (
-        <div key={i} className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
-          <input type="number" className="p-2 border rounded" value={hose.length} onChange={(e) => handleFlexHoseChange(i, 'length', e.target.value)} placeholder="Length (in)" />
-          <input type="number" className="p-2 border rounded" value={hose.diameter} onChange={(e) => handleFlexHoseChange(i, 'diameter', e.target.value)} placeholder="Diameter (in)" />
-        </div>
-      ))}
-      <button onClick={addFlexHose} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">+ Add Flex Hose</button>
-
-      <h2 className="text-xl font-semibold mb-2">System Components</h2>
-      {components.map((comp, i) => (
-        <div key={i} className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4 items-end">
-          <select className="p-2 border rounded" value={comp.type} onChange={(e) => handleComponentChange(i, 'type', e.target.value)}>
-            {Object.keys(componentLossValues).map((key) => (
-              <option key={key} value={key}>{componentLossValues[key].label}</option>
-            ))}
-          </select>
-          <input type="number" className="p-2 border rounded" value={comp.quantity} onChange={(e) => handleComponentChange(i, 'quantity', e.target.value)} placeholder="Qty" />
-          <input type="number" className="p-2 border rounded" value={comp.diameter || ''} onChange={(e) => handleComponentChange(i, 'diameter', e.target.value)} placeholder="Diameter (in)" />
-          <button onClick={() => removeComponent(i)} className="bg-red-500 text-white px-3 py-2 rounded">Remove</button>
-        </div>
-      ))}
-      <button onClick={addComponent} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">+ Add Component</button>
+      <button onClick={addFanRow} className="bg-blue-600 text-white px-4 py-2 rounded mb-6">
+        + Add Fan Chart Row
+      </button>
 
       <div>
-        <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">Calculate</button>
+        <button onClick={handleCalculate} className="bg-green-600 text-white px-6 py-2 rounded">
+          Calculate
+        </button>
       </div>
 
       {result && (
